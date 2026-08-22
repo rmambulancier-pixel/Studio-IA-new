@@ -1,4 +1,4 @@
-const C = 'studio-ia-v1';
+const C = 'studio-ia-v2';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 self.addEventListener('fetch', e => {
