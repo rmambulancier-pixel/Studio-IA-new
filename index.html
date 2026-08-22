@@ -725,21 +725,24 @@ function setupInstallPrompt() {
     $('fileModeBanner').classList.add('show');
     return;
   }
-  const page = location.pathname.split('/').pop() || 'studio-ia.html';
-  const manifest = {
-    name: 'Studio IA', short_name: 'Studio IA',
-    description: 'Assistant de rédaction et génération de code — Claude & Ox Alpha',
-    start_url: './' + page, scope: './', display: 'standalone', orientation: 'portrait',
-    background_color: '#0a0a0f', theme_color: '#0a0a0f',
-    icons: [
-      { src: drawAppIcon(192).toDataURL('image/png'), sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: drawAppIcon(512).toDataURL('image/png'), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  };
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
-  document.head.appendChild(link);
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    $('installBanner').classList.add('show');
+  });
+  $('btnInstall').addEventListener('click', async () => {
+    if (!deferredPrompt) { showToast('Menu \u22ee > \u00AB Installer l\u2019application \u00BB', 'warn'); return; }
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    $('installBanner').classList.remove('show');
+  });
+  window.addEventListener('appinstalled', () => {
+    $('installBanner').classList.remove('show');
+    showToast('Studio IA install\u00E9', 'ok');
+  });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 
   let deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', e => {
